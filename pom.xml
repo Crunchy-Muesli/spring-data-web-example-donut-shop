@@ -25,9 +25,21 @@
   <properties>
     <java.version>11</java.version>
   </properties>
-  <dependencies>
 
-  </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>personal-example</groupId>
+        <artifactId>donut-shop-entity</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>personal-example</groupId>
+        <artifactId>donut-shop-rest</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <build>
     <defaultGoal>clean install</defaultGoal>
