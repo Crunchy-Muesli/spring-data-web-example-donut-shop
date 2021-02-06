@@ -1,8 +1,7 @@
 package donut.shop.rest;
 
-import donut.shop.entity.dto.DonutDto;
-import donut.shop.entity.dto.OrderDto;
 import donut.shop.entity.mongo.CustomerReview;
+import donut.shop.entity.relational.Donut;
 import donut.shop.entity.relational.Order;
 import donut.shop.rest.service.CustomerService;
 import org.slf4j.Logger;
@@ -29,7 +28,7 @@ public class CustomerRest {
 	}
 
 	@PostMapping("place-order")
-    public ResponseEntity<Order> placeOrder(@RequestBody OrderDto req) {
+    public ResponseEntity<Order> placeOrder(@RequestBody Order req) {
 	    try {
             Order res = customerService.placeOrder(req);
             return ResponseEntity.ok(res);
@@ -52,9 +51,9 @@ public class CustomerRest {
 	}
 
     @GetMapping("get-donuts")
-    public ResponseEntity<List<DonutDto>> getDonuts() {
+    public ResponseEntity<List<Donut>> getDonuts() {
         try {
-            List<DonutDto> res = customerService.getDonuts();
+            List<Donut> res = customerService.getDonuts();
             return ResponseEntity.ok(res);
         }
         catch (Exception e){

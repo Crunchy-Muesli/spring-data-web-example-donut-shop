@@ -1,9 +1,11 @@
 package donut.shop.entity.relational;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.persistence.*;
 
+@JsonIgnoreProperties("ingredientId")
 @Table(name = "ingredients",uniqueConstraints={@UniqueConstraint(columnNames = {"name"})})
 @Entity
 @Data
@@ -11,11 +13,7 @@ public class Ingredient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int ingredientId;
 
     private String name;
-
-    @ManyToOne(targetEntity=Donut.class,fetch= FetchType.EAGER)
-    private Donut donut;
-
 }

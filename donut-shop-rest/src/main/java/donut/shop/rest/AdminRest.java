@@ -1,7 +1,5 @@
 package donut.shop.rest;
 
-import donut.shop.entity.dto.DonutDto;
-import donut.shop.entity.dto.IngredientDto;
 import donut.shop.entity.relational.Donut;
 import donut.shop.entity.relational.Ingredient;
 import donut.shop.rest.service.AdminService;
@@ -28,7 +26,7 @@ public class AdminRest {
     }
 
     @PostMapping("new-donut")
-    public ResponseEntity<Donut> newDonut(@RequestBody DonutDto req) {
+    public ResponseEntity<Donut> newDonut(@RequestBody Donut req) {
         try {
             Donut res = adminService.newDonut(req);
             return ResponseEntity.ok(res);
@@ -39,7 +37,7 @@ public class AdminRest {
     }
 
     @PatchMapping("update-donut")
-    public ResponseEntity<Donut> updateDonut(@RequestBody DonutDto req) {
+    public ResponseEntity<Donut> updateDonut(@RequestBody Donut req) {
         try {
             Donut res = adminService.updateDonut(req);
             return ResponseEntity.ok(res);
@@ -50,7 +48,7 @@ public class AdminRest {
     }
 
     @DeleteMapping("delete-donut")
-    public ResponseEntity<Void> deleteDonut(@RequestBody DonutDto req) {
+    public ResponseEntity<Void> deleteDonut(@RequestBody Donut req) {
         try {
             adminService.deleteDonut(req);
             return ResponseEntity.ok(null);
@@ -61,7 +59,7 @@ public class AdminRest {
     }
 
     @PostMapping("add-ingredients")
-    public ResponseEntity<List<Ingredient>> addIngredients(@RequestBody List<IngredientDto> req) {
+    public ResponseEntity<List<Ingredient>> addIngredients(@RequestBody List<Ingredient> req) {
         try {
             List<Ingredient> res = adminService.addIngredients(req);
             return ResponseEntity.ok(res);
