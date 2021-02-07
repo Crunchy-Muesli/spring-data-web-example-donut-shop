@@ -1,8 +1,9 @@
 package donut.shop.rest;
 
+import donut.shop.entity.dto.DonutOrder;
 import donut.shop.entity.mongo.CustomerReview;
 import donut.shop.entity.relational.Donut;
-import donut.shop.entity.relational.Order;
+import donut.shop.entity.mongo.Order;
 import donut.shop.rest.service.CustomerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static donut.shop.constant.DonutShopConstant.EXCEPTION;
 
 
 @RestController
@@ -28,13 +31,15 @@ public class CustomerRest {
 	}
 
 	@PostMapping("place-order")
-    public ResponseEntity<Order> placeOrder(@RequestBody Order req) {
+    public ResponseEntity<Order> placeOrder(@RequestBody List<DonutOrder> req) {
 	    try {
             Order res = customerService.placeOrder(req);
             return ResponseEntity.ok(res);
         }
 	    catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .header(EXCEPTION, e.getMessage())
+                    .body(null);
         }
 	}
 
@@ -46,7 +51,9 @@ public class CustomerRest {
             return ResponseEntity.ok(res);
         }
 	    catch (Exception e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .header(EXCEPTION, e.getMessage())
+                    .body(null);
         }
 	}
 
@@ -57,7 +64,9 @@ public class CustomerRest {
             return ResponseEntity.ok(res);
         }
         catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header(EXCEPTION, e.getMessage())
+                    .body(null);
         }
     }
 

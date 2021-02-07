@@ -4,12 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.Id;
+
 @Document(collection = "reviews")
 @Data
-@AllArgsConstructor
 public class CustomerReview {
 
-    private int orderId;
+    //overriding the obligatory mongodb "_id" field
+    @Id
+    private String _id;
+
+    private String orderId;
 
     private String review;
 }

@@ -5,14 +5,10 @@ import donut.shop.entity.relational.Ingredient;
 import donut.shop.entity.repository.relational.DonutRepository;
 import donut.shop.entity.repository.relational.IngredientRepository;
 import javassist.NotFoundException;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,30 +25,27 @@ public class AdminService {
     }
 
     public Donut newDonut(Donut donut) {
-
-        if(countDecimal(donut.getPrice())>2) throw new RuntimeException("Must be a real price");
-        if(countIntegers(donut.getPrice())>1) throw new RuntimeException("How much do you think a donut costs?!");
-
+        donut.setPrice(checkAndRoundDonutPrice(donut.getPrice()));
         Set<Ingredient> realIngredients = getRealIngredients(donut.getIngredients());
 
         donut.setIngredients(realIngredients);
         return donutRepository.save(donut);
     }
 
-    public Donut updateDonut(Donut req){
-        Donut donut = donutRepository.findByName(req.getName())
+    public Donut updateDonut(int donutId,Donut req) {
+        Donut donut = donutRepository.findByDonutId(donutId)
                 .orElseThrow(() -> new RuntimeException("Donut with name " + req.getName() + " not found"));
 
         donut.setDescription(req.getDescription());
-        donut.setPrice(req.getPrice());
+        donut.setName(req.getName());
+        donut.setPrice(checkAndRoundDonutPrice(req.getPrice()));
         donut.setIngredients(getRealIngredients(req.getIngredients()));
-
-        return donut;
+        return donutRepository.save(donut);
     }
 
-    public void deleteDonut(Donut req) throws NotFoundException {
-        Donut donut = donutRepository.findByName(req.getName())
-                .orElseThrow(() -> new NotFoundException("Donut with name " + req.getName() + " not found"));
+    public void deleteDonut(String donutName) throws NotFoundException {
+        Donut donut = donutRepository.findByName(donutName)
+                .orElseThrow(() -> new NotFoundException("Donut with name " + donutName + " not found"));
 
         donutRepository.delete(donut);
     }
@@ -68,14 +61,33 @@ public class AdminService {
                 .collect(Collectors.toSet());
     }
 
-    private Integer countDecimal(BigDecimal number){
-        return Math.max(0, number.stripTrailingZeros().scale());
+    private String checkAndRoundDonutPrice(String price) {
+
+        //rounding value to 2 decimal digits
+        Double priceDouble = Double.parseDouble(price);
+
+        if (priceDouble > 10 || priceDouble < 0.50) throw new RuntimeException("How much do you think a donut costs Pick a price between 10 and 0.50... coins");
+        String rounded = String.format("%.2f", priceDouble);
+
+        return rounded;
     }
 
-    private Integer countIntegers(BigDecimal number){
-        number = number.stripTrailingZeros();
-        return number.precision() - number.scale();
-    }
+    public Set<Ingredient> deleteIngredients(List<Ingredient> ingredients) {
+        Set<Ingredient> toBedeleted = getRealIngredients(ingredients.stream().collect(Collectors.toSet()));
 
+        Set<Ingredient> usedIngredients = donutRepository.findAll().stream()
+                .flatMap(donut -> donut.getIngredients().stream())
+                .collect(Collectors.toSet());
+
+        Set<Ingredient> undeletable = toBedeleted.stream()
+                .filter(usedIngredients::contains)
+                .collect(Collectors.toSet());
+
+        if(!undeletable.isEmpty()) throw new RuntimeException("Cannot delete ingredients " + undeletable.stream().map(Ingredient::getName).collect(Collectors.joining(",","[","]")) + " since they are still in use");
+
+        ingredientRepository.deleteInBatch(toBedeleted);
+
+        return toBedeleted;
+    }
 
 }
