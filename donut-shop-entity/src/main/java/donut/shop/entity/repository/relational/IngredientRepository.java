@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface IngredientRepository extends JpaRepository<Ingredient,String> {
+public interface IngredientRepository extends JpaRepository<Ingredient, String> {
     Optional<Ingredient> findByName(String name);
 }

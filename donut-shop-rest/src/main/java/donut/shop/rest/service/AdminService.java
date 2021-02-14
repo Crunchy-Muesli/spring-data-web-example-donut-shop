@@ -24,7 +24,7 @@ public class AdminService {
         this.ingredientRepository = ingredientRepository;
     }
 
-    public List<Ingredient> getIngredients(){
+    public List<Ingredient> getIngredients() {
         return ingredientRepository.findAll();
     }
 
@@ -37,7 +37,7 @@ public class AdminService {
         return donutRepository.save(donut);
     }
 
-    public Donut updateDonut(int donutId,Donut req) {
+    public Donut updateDonut(int donutId, Donut req) {
         Donut donut = donutRepository.findByDonutId(donutId)
                 .orElseThrow(() -> new RuntimeException("Donut with name " + req.getName() + " not found"));
 
@@ -71,7 +71,9 @@ public class AdminService {
         //rounding value to 2 decimal digits
         Double priceDouble = Double.parseDouble(price);
 
-        if (priceDouble > 10 || priceDouble < 0.50) throw new RuntimeException("How much do you think a donut costs Pick a price between 10 and 0.50... coins");
+        if (priceDouble > 10 || priceDouble < 0.50)
+            throw new RuntimeException("How much do you think a donut costs Pick a price between 10 and 0" +
+                    ".50... coins");
         String rounded = String.format("%.2f", priceDouble);
 
         return rounded;
@@ -88,7 +90,8 @@ public class AdminService {
                 .filter(usedIngredients::contains)
                 .collect(Collectors.toSet());
 
-        if(!undeletable.isEmpty()) throw new RuntimeException("Cannot delete ingredients " + undeletable.stream().map(Ingredient::getName).collect(Collectors.joining(",","[","]")) + " since they are still in use");
+        if (!undeletable.isEmpty())
+            throw new RuntimeException("Cannot delete ingredients " + undeletable.stream().map(Ingredient::getName).collect(Collectors.joining(",", "[", "]")) + " since they are still in use");
 
         ingredientRepository.deleteInBatch(toBedeleted);
 

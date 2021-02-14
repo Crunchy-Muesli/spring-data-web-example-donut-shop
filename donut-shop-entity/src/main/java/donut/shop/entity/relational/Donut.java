@@ -1,16 +1,13 @@
 package donut.shop.entity.relational;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 
 @JsonIgnoreProperties("donutId")
-@Table(name = "donuts",uniqueConstraints={@UniqueConstraint(columnNames = {"name","description"})})
+@Table(name = "donuts", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "description"})})
 @Entity
 @Data
 public class Donut {
@@ -27,7 +24,7 @@ public class Donut {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "donuts_ingredients",
-            joinColumns = { @JoinColumn(name = "donut_id") },
-            inverseJoinColumns = { @JoinColumn(name = "ingredient_id") })
+            joinColumns = {@JoinColumn(name = "donut_id")},
+            inverseJoinColumns = {@JoinColumn(name = "ingredient_id")})
     private Set<Ingredient> ingredients;
 }

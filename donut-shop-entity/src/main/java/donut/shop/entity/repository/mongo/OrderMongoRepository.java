@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderMongoRepository extends MongoRepository<Order,String> {
+public interface OrderMongoRepository extends MongoRepository<Order, String> {
 
 }

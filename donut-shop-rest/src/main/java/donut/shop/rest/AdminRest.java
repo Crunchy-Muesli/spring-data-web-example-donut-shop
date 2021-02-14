@@ -33,8 +33,7 @@ public class AdminRest {
         try {
             List<Ingredient> res = adminService.getIngredients();
             return ResponseEntity.ok(res);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .header(EXCEPTION, e.getMessage())
                     .body(null);
@@ -56,7 +55,7 @@ public class AdminRest {
     @PatchMapping("update-donut/{donutId}")
     public ResponseEntity<Donut> updateDonut(@PathVariable("donutId") int donutId, @RequestBody Donut req) {
         try {
-            Donut res = adminService.updateDonut(donutId,req);
+            Donut res = adminService.updateDonut(donutId, req);
             return ResponseEntity.ok(res);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

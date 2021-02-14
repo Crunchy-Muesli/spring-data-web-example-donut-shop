@@ -1,7 +1,6 @@
 package donut.shop.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -28,8 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authentication)
-            throws Exception
-    {
+            throws Exception {
         authentication.inMemoryAuthentication()
                 .withUser("admin")
                 .password(passwordEncoder().encode("password"))

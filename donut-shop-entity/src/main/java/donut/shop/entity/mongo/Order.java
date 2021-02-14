@@ -4,7 +4,7 @@ import donut.shop.entity.dto.DonutOrder;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.*;
+import javax.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.List;
 

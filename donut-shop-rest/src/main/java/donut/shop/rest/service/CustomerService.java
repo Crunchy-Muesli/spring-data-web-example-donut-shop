@@ -2,12 +2,11 @@ package donut.shop.rest.service;
 
 import donut.shop.entity.dto.DonutOrder;
 import donut.shop.entity.mongo.CustomerReview;
-import donut.shop.entity.relational.Donut;
 import donut.shop.entity.mongo.Order;
-import donut.shop.entity.relational.Ingredient;
+import donut.shop.entity.relational.Donut;
+import donut.shop.entity.repository.mongo.OrderMongoRepository;
 import donut.shop.entity.repository.mongo.ReviewMongoRepository;
 import donut.shop.entity.repository.relational.DonutRepository;
-import donut.shop.entity.repository.mongo.OrderMongoRepository;
 import javassist.NotFoundException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,8 @@ public class CustomerService {
     private ReviewMongoRepository reviewsRepository;
 
     @Autowired
-    public CustomerService(OrderMongoRepository orderRepository, ReviewMongoRepository reviewsMongoRepository, DonutRepository donutRepository){
+    public CustomerService(OrderMongoRepository orderRepository,
+                           ReviewMongoRepository reviewsMongoRepository, DonutRepository donutRepository) {
         this.orderRepository = orderRepository;
         this.donutRepository = donutRepository;
         this.reviewsRepository = reviewsMongoRepository;
@@ -35,7 +35,7 @@ public class CustomerService {
     public Order placeOrder(List<DonutOrder> donuts) {
         Order order = new Order();
 
-        Map<Integer,Donut> realDonuts = checkAndGetMultipleDonuts(donuts);
+        Map<Integer, Donut> realDonuts = checkAndGetMultipleDonuts(donuts);
         order.setDonuts(donuts);
         order.setDate(LocalDateTime.now());
 
@@ -51,7 +51,7 @@ public class CustomerService {
 
     public CustomerReview writeReview(String orderId, String review) throws NotFoundException {
         Order order = orderRepository.findById(orderId)
-               .orElseThrow(() -> new NotFoundException("Order with id " + orderId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Order with id " + orderId + " not found"));
 
         CustomerReview customerReview = new CustomerReview();
         customerReview.setReview(review);
@@ -61,15 +61,16 @@ public class CustomerService {
         return reviewsRepository.save(customerReview);
     }
 
-    public List<Donut> getDonuts(){
+    public List<Donut> getDonuts() {
         return donutRepository.findAll();
     }
 
-    private Map<Integer,Donut> checkAndGetMultipleDonuts(List<DonutOrder> donutOrder) {
+    private Map<Integer, Donut> checkAndGetMultipleDonuts(List<DonutOrder> donutOrder) {
 
         return donutOrder.stream()
-                .collect(Collectors.toMap(DonutOrder::getDonutQuantity, order -> donutRepository.findByName(order.getDonutName())
-                        .orElseThrow(() -> new RuntimeException("Donut with name " + order.getDonutName() + " not found")) ));
+                .collect(Collectors.toMap(DonutOrder::getDonutQuantity,
+                        order -> donutRepository.findByName(order.getDonutName())
+                                .orElseThrow(() -> new RuntimeException("Donut with name " + order.getDonutName() + " not found"))));
 
     }
 
