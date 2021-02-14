@@ -28,6 +28,19 @@ public class AdminRest {
         this.adminService = service;
     }
 
+    @GetMapping("get-ingredients")
+    public ResponseEntity<List<Ingredient>> getIngredients() {
+        try {
+            List<Ingredient> res = adminService.getIngredients();
+            return ResponseEntity.ok(res);
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header(EXCEPTION, e.getMessage())
+                    .body(null);
+        }
+    }
+
     @PostMapping("new-donut")
     public ResponseEntity<Donut> newDonut(@RequestBody Donut req) {
         try {

@@ -24,6 +24,11 @@ public class AdminService {
         this.ingredientRepository = ingredientRepository;
     }
 
+    public List<Ingredient> getIngredients(){
+        return ingredientRepository.findAll();
+    }
+
+
     public Donut newDonut(Donut donut) {
         donut.setPrice(checkAndRoundDonutPrice(donut.getPrice()));
         Set<Ingredient> realIngredients = getRealIngredients(donut.getIngredients());
