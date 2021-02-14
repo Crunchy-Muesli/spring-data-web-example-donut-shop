@@ -13,7 +13,12 @@ import java.util.Set;
 public class Donut {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // Starting from index 4 as we have already 3 donuts from the flyway migration
+    @SequenceGenerator(initialValue = 4,
+            allocationSize = 1,
+            name = "donut_sequence",
+            sequenceName = "donut_sequence")
+    @GeneratedValue(generator = "donut_sequence")
     private int donutId;
 
     private String name;
