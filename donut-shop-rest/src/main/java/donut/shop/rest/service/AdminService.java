@@ -8,6 +8,7 @@ import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,8 +16,8 @@ import java.util.stream.Collectors;
 @Service
 public class AdminService {
 
-    private DonutRepository donutRepository;
-    private IngredientRepository ingredientRepository;
+    private final DonutRepository donutRepository;
+    private final IngredientRepository ingredientRepository;
 
     @Autowired
     public AdminService(DonutRepository donutRepository, IngredientRepository ingredientRepository) {
@@ -31,20 +32,27 @@ public class AdminService {
 
     public Donut newDonut(Donut donut) {
         donut.setPrice(checkAndRoundDonutPrice(donut.getPrice()));
-        Set<Ingredient> realIngredients = getRealIngredients(donut.getIngredients());
+        Set<Ingredient> realIngredients =
+                getRealIngredients(donut.getIngredients()
+                        .stream()
+                        .map(Ingredient::getName)
+                        .collect(Collectors.toSet()));
 
         donut.setIngredients(realIngredients);
         return donutRepository.save(donut);
     }
 
-    public Donut updateDonut(int donutId, Donut req) {
-        Donut donut = donutRepository.findByDonutId(donutId)
-                .orElseThrow(() -> new RuntimeException("Donut with name " + req.getName() + " not found"));
+    public Donut updateDonut(String name, Donut req) {
+        Donut donut = donutRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Donut with name " + name + " not found"));
 
         donut.setDescription(req.getDescription());
-        donut.setName(req.getName());
         donut.setPrice(checkAndRoundDonutPrice(req.getPrice()));
-        donut.setIngredients(getRealIngredients(req.getIngredients()));
+        donut.setIngredients(getRealIngredients(req.getIngredients()
+                .stream()
+                .map(Ingredient::getName)
+                .collect(Collectors.toSet())));
+
         return donutRepository.save(donut);
     }
 
@@ -59,10 +67,32 @@ public class AdminService {
         return ingredientRepository.saveAll(ingredients);
     }
 
-    private Set<Ingredient> getRealIngredients(Set<Ingredient> ingredients) {
+    public void deleteIngredients(List<String> ingredients) {
+        Set<Ingredient> toBeDeleted = getRealIngredients(new HashSet<>(ingredients));
+
+        Set<Ingredient> usedIngredients = donutRepository.findAll().stream()
+                .flatMap(donut -> donut.getIngredients().stream())
+                .collect(Collectors.toSet());
+
+        Set<Ingredient> undeletable = toBeDeleted.stream()
+                .filter(usedIngredients::contains)
+                .collect(Collectors.toSet());
+
+        if (!undeletable.isEmpty())
+            throw new RuntimeException("Cannot delete ingredients " + undeletable.stream()
+                    .map(Ingredient::getName)
+                    .collect(Collectors.joining(",", "[", "]"))
+                    + " since they are still in use");
+
+        ingredientRepository.deleteInBatch(toBeDeleted);
+
+    }
+
+    private Set<Ingredient> getRealIngredients(Set<String> ingredients) {
         return ingredients.stream()
-                .map(ingredient -> ingredientRepository.findByName(ingredient.getName())
-                        .orElseThrow(() -> new RuntimeException("Ingredient with name " + ingredient.getName() + " not found")))
+                .map(ingredient -> ingredientRepository.findByName(ingredient)
+                        .orElseThrow(() -> new RuntimeException("Ingredient with name " + ingredient + " " +
+                                "not found")))
                 .collect(Collectors.toSet());
     }
 
@@ -72,30 +102,11 @@ public class AdminService {
         Double priceDouble = Double.parseDouble(price);
 
         if (priceDouble > 10 || priceDouble < 0.50)
-            throw new RuntimeException("How much do you think a donut costs Pick a price between 10 and 0" +
+            throw new RuntimeException("How much do you think a donut costs? Pick a price between 10 and 0" +
                     ".50... coins");
-        String rounded = String.format("%.2f", priceDouble);
 
-        return rounded;
+        return String.format("%.2f", priceDouble);
     }
 
-    public Set<Ingredient> deleteIngredients(List<Ingredient> ingredients) {
-        Set<Ingredient> toBedeleted = getRealIngredients(ingredients.stream().collect(Collectors.toSet()));
-
-        Set<Ingredient> usedIngredients = donutRepository.findAll().stream()
-                .flatMap(donut -> donut.getIngredients().stream())
-                .collect(Collectors.toSet());
-
-        Set<Ingredient> undeletable = toBedeleted.stream()
-                .filter(usedIngredients::contains)
-                .collect(Collectors.toSet());
-
-        if (!undeletable.isEmpty())
-            throw new RuntimeException("Cannot delete ingredients " + undeletable.stream().map(Ingredient::getName).collect(Collectors.joining(",", "[", "]")) + " since they are still in use");
-
-        ingredientRepository.deleteInBatch(toBedeleted);
-
-        return toBedeleted;
-    }
 
 }

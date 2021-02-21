@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 @Service
 public class CustomerService {
 
-    private OrderMongoRepository orderRepository;
-    private DonutRepository donutRepository;
-    private ReviewMongoRepository reviewsRepository;
+    private final OrderMongoRepository orderRepository;
+    private final DonutRepository donutRepository;
+    private final ReviewMongoRepository reviewsRepository;
 
     @Autowired
     public CustomerService(OrderMongoRepository orderRepository,

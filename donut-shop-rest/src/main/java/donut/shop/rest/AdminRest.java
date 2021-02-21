@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 import static donut.shop.constant.DonutShopConstant.EXCEPTION;
 
@@ -52,10 +51,10 @@ public class AdminRest {
         }
     }
 
-    @PatchMapping("update-donut/{donutId}")
-    public ResponseEntity<Donut> updateDonut(@PathVariable("donutId") int donutId, @RequestBody Donut req) {
+    @PatchMapping("update-donut/{donutName}")
+    public ResponseEntity<Donut> updateDonut(@PathVariable("donutName") String donutName, @RequestBody Donut req) {
         try {
-            Donut res = adminService.updateDonut(donutId, req);
+            Donut res = adminService.updateDonut(donutName, req);
             return ResponseEntity.ok(res);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -89,10 +88,10 @@ public class AdminRest {
     }
 
     @DeleteMapping("delete-ingredients")
-    public ResponseEntity<Set<Ingredient>> deleteIngredients(@RequestBody List<Ingredient> req) {
+    public ResponseEntity<Void> deleteIngredients(@RequestBody List<String> req) {
         try {
-            Set<Ingredient> res = adminService.deleteIngredients(req);
-            return ResponseEntity.ok(res);
+            adminService.deleteIngredients(req);
+            return ResponseEntity.ok(null);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .header(EXCEPTION, e.getMessage())
