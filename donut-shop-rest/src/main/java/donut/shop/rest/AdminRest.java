@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static donut.shop.constant.DonutShopConstant.EXCEPTION;
+import static donut.shop.constant.DonutShopConstant.*;
 
 @RestController
-@RequestMapping("/admin/")
+@RequestMapping(ADMIN_REST)
 public class AdminRest {
 
     Logger logger = LoggerFactory.getLogger(AdminRest.class);
@@ -27,7 +27,7 @@ public class AdminRest {
         this.adminService = service;
     }
 
-    @GetMapping("get-ingredients")
+    @GetMapping(ADMIN_GET_INGREDIENTS)
     public ResponseEntity<List<Ingredient>> getIngredients() {
         try {
             List<Ingredient> res = adminService.getIngredients();
@@ -39,7 +39,7 @@ public class AdminRest {
         }
     }
 
-    @PostMapping("new-donut")
+    @PostMapping(ADMIN_NEW_DONUT)
     public ResponseEntity<Donut> newDonut(@RequestBody Donut req) {
         try {
             Donut res = adminService.newDonut(req);
@@ -51,8 +51,9 @@ public class AdminRest {
         }
     }
 
-    @PatchMapping("update-donut/{donutName}")
-    public ResponseEntity<Donut> updateDonut(@PathVariable("donutName") String donutName, @RequestBody Donut req) {
+    @PatchMapping(ADMIN_UPDATE_DONUT)
+    public ResponseEntity<Donut> updateDonut(@PathVariable("donutName") String donutName,
+                                             @RequestBody Donut req) {
         try {
             Donut res = adminService.updateDonut(donutName, req);
             return ResponseEntity.ok(res);
@@ -63,7 +64,7 @@ public class AdminRest {
         }
     }
 
-    @DeleteMapping("delete-donut")
+    @DeleteMapping(ADMIN_DELETE_DONUT)
     public ResponseEntity<Void> deleteDonut(@RequestBody String req) {
         try {
             adminService.deleteDonut(req);
@@ -75,7 +76,7 @@ public class AdminRest {
         }
     }
 
-    @PostMapping("add-ingredients")
+    @PostMapping(ADMIN_ADD_INGREDIENTS)
     public ResponseEntity<List<Ingredient>> addIngredients(@RequestBody List<Ingredient> req) {
         try {
             List<Ingredient> res = adminService.addIngredients(req);
@@ -87,7 +88,7 @@ public class AdminRest {
         }
     }
 
-    @DeleteMapping("delete-ingredients")
+    @DeleteMapping(ADMIN_DELETE_INGREDIENTS)
     public ResponseEntity<Void> deleteIngredients(@RequestBody List<String> req) {
         try {
             adminService.deleteIngredients(req);

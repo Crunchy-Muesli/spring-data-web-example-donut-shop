@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static donut.shop.constant.DonutShopConstant.EXCEPTION;
+import static donut.shop.constant.DonutShopConstant.*;
 
 
 @RestController
-@RequestMapping("/customer/")
+@RequestMapping(CUSTOMER_REST)
 public class CustomerRest {
 
     Logger logger = LoggerFactory.getLogger(CustomerRest.class);
@@ -30,7 +30,7 @@ public class CustomerRest {
         this.customerService = service;
     }
 
-    @PostMapping("place-order")
+    @PostMapping(CUSTOMER_PLACE_ORDER)
     public ResponseEntity<Order> placeOrder(@RequestBody List<DonutOrder> req) {
         try {
             Order res = customerService.placeOrder(req);
@@ -42,7 +42,7 @@ public class CustomerRest {
         }
     }
 
-    @PostMapping("write-review/{orderId}")
+    @PostMapping(CUSTOMER_REVIEW)
     public ResponseEntity<CustomerReview> writeReview(@PathVariable("orderId") String orderId,
                                                       String review) {
 
@@ -56,7 +56,7 @@ public class CustomerRest {
         }
     }
 
-    @GetMapping("get-donuts")
+    @GetMapping(CUSTOMER_GET_DONUTS)
     public ResponseEntity<List<Donut>> getDonuts() {
         try {
             List<Donut> res = customerService.getDonuts();
