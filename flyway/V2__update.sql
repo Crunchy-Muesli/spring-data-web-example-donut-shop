@@ -6,7 +6,8 @@ INSERT INTO "ingredients" ("ingredient_id", "name") VALUES
 (5,	'strawberry jam'),
 (6,	'chocolate'),
 (7,	'caramel glaze'),
-(8,	'sugar glaze');
+(8,	'sugar glaze'),
+(9,	'chocolate glaze');
 
 INSERT INTO "donuts" ("donut_id", "description", "name", "price") VALUES
 (1,	'Creamy donut with a magnificent caramel glaze',	'Caramel Delight',	'2.50'),
