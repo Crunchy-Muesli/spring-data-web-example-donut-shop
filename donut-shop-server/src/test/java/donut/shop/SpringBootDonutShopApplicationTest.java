@@ -1,7 +1,9 @@
 package donut.shop;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import donut.shop.entity.dto.DonutOrder;
 import donut.shop.entity.mongo.CustomerReview;
+import donut.shop.entity.mongo.Order;
 import donut.shop.entity.relational.Donut;
 import donut.shop.entity.relational.Ingredient;
 import donut.shop.entity.repository.mongo.OrderMongoRepository;
@@ -10,11 +12,9 @@ import donut.shop.entity.repository.relational.DonutRepository;
 import donut.shop.entity.repository.relational.IngredientRepository;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.internal.matchers.apachecommons.ReflectionEquals;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,23 +29,21 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static donut.shop.constant.DonutShopConstant.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "classpath:test.properties")
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @ComponentScan
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT, classes =
@@ -88,7 +86,7 @@ public class SpringBootDonutShopApplicationTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void restTemplateSetup() {
         //Using apache client because TestRestTemplate does not support PATCH or DELETE with body
         this.restTemplate = testRestTemplate.getRestTemplate();
@@ -124,6 +122,8 @@ public class SpringBootDonutShopApplicationTest {
         ResponseEntity<Ingredient[]> getIngCorr =
                 testRestTemplate.withBasicAuth("admin", "password").getForEntity(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_GET_INGREDIENTS)), Ingredient[].class);
         assertEquals(HttpStatus.OK, getIngCorr.getStatusCode());
+
+        assertNotNull(getIngCorr.getBody());
         List<Ingredient> ingredients = Arrays.asList(getIngCorr.getBody());
         assertEquals(9, ingredients.size());
 
@@ -189,7 +189,7 @@ public class SpringBootDonutShopApplicationTest {
     }
 
     @Test
-    public void test4AdminUpdateDonutTest() throws IOException {
+    public void test4AdminUpdateDonutTest() {
         // update-donut, with no authentication
         ResponseEntity<Void> upDonutErr =
                 restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_UPDATE_DONUT).replace("{donutName}", "donut")), HttpMethod.PATCH, new HttpEntity(new Donut(), new HttpHeaders()), Void.class);
@@ -226,14 +226,18 @@ public class SpringBootDonutShopApplicationTest {
         upDonut.setIngredients(Set.of(ingredientWrong));
 
         ResponseEntity<Donut> newDonErrIng =
-                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_UPDATE_DONUT).replace("{donutName}", "Chocolate%20Bomb")), HttpMethod.PATCH, new HttpEntity(upDonut, reqHeaders), Donut.class);
+                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_UPDATE_DONUT)
+                                .replace("{donutName}", "Chocolate%20Bomb")), HttpMethod.PATCH,
+                        new HttpEntity(upDonut, reqHeaders), Donut.class);
         assertEquals(HttpStatus.NOT_FOUND, newDonErrIng.getStatusCode());
         assertTrue(newDonErrIng.getHeaders().get("Exception").toString().contains("Ingredient with name"));
         assertTrue(newDonErrIng.getHeaders().get("Exception").toString().contains("not found"));
 
         // update-donut, error name not found
         ResponseEntity<Donut> newDonErrName =
-                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_UPDATE_DONUT).replace("{donutName}", "wrong")), HttpMethod.PATCH, new HttpEntity(upDonut, reqHeaders), Donut.class);
+                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_UPDATE_DONUT)
+                        .replace("{donutName}", "wrong")), HttpMethod.PATCH, new HttpEntity(upDonut,
+                        reqHeaders), Donut.class);
         assertEquals(HttpStatus.NOT_FOUND, newDonErrName.getStatusCode());
         assertTrue(newDonErrName.getHeaders().get("Exception").toString().contains("Donut with name"));
         assertTrue(newDonErrName.getHeaders().get("Exception").toString().contains("not found"));
@@ -271,7 +275,8 @@ public class SpringBootDonutShopApplicationTest {
     public void test6AdminAddIngredientTest() {
         // add-ingredients, with no authentication
         ResponseEntity<Void> addIngErr =
-                testRestTemplate.postForEntity(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_ADD_INGREDIENTS)), new ArrayList<>(), Void.class);
+                testRestTemplate.postForEntity(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_ADD_INGREDIENTS)),
+                        new ArrayList<>(), Void.class);
         assertEquals(HttpStatus.UNAUTHORIZED, addIngErr.getStatusCode());
 
         // add-ingredients, correct
@@ -279,7 +284,9 @@ public class SpringBootDonutShopApplicationTest {
         ingredient.setName("newing");
 
         ResponseEntity<Ingredient[]> addIngCorr =
-                testRestTemplate.withBasicAuth("admin", "password").postForEntity(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_ADD_INGREDIENTS)), Collections.singletonList(ingredient), Ingredient[].class);
+                testRestTemplate.withBasicAuth("admin", "password")
+                        .postForEntity(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_ADD_INGREDIENTS))
+                                , Collections.singletonList(ingredient), Ingredient[].class);
         assertEquals(HttpStatus.OK, addIngCorr.getStatusCode());
 
         List<Ingredient> ingredients = Arrays.asList(addIngCorr.getBody());
@@ -295,7 +302,8 @@ public class SpringBootDonutShopApplicationTest {
     public void test7AdminDeleteIngredientsTest() {
         // delete-ingredients, with no authentication
         ResponseEntity<Void> delIngErr =
-                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)), HttpMethod.DELETE, new HttpEntity(new ArrayList<>(), new HttpHeaders()), Void.class);
+                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)),
+                        HttpMethod.DELETE, new HttpEntity(new ArrayList<>(), new HttpHeaders()), Void.class);
         assertEquals(HttpStatus.UNAUTHORIZED, delIngErr.getStatusCode());
 
         // delete-ingredients, correct
@@ -303,7 +311,9 @@ public class SpringBootDonutShopApplicationTest {
         reqHeaders.setBasicAuth("admin", "password");
 
         ResponseEntity<Void> delIngCorr =
-                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)), HttpMethod.DELETE, new HttpEntity(Collections.singletonList("chocolate glaze"), reqHeaders), Void.class);
+                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)),
+                        HttpMethod.DELETE, new HttpEntity(Collections.singletonList("chocolate glaze"),
+                                reqHeaders), Void.class);
         assertEquals(HttpStatus.OK, delIngCorr.getStatusCode());
 
         List<Ingredient> allIngredients = ingredientRepository.findAll();
@@ -311,15 +321,94 @@ public class SpringBootDonutShopApplicationTest {
 
         // delete-ingredients, error not found
         ResponseEntity<Void> delIngErrNotFound =
-                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)), HttpMethod.DELETE, new HttpEntity(Collections.singletonList("chocolate glaze"), reqHeaders), Void.class);
+                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)),
+                        HttpMethod.DELETE, new HttpEntity(Collections.singletonList("chocolate glaze"),
+                                reqHeaders), Void.class);
         assertEquals(HttpStatus.NOT_FOUND, delIngErrNotFound.getStatusCode());
         assertTrue(delIngErrNotFound.getHeaders().get("Exception").toString().contains("not found"));
 
         // delete-ingredients, error ingredients belongs to a donut
         ResponseEntity<Void> delIngErrDon =
-                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)), HttpMethod.DELETE, new HttpEntity(Collections.singletonList("sugar glaze"), reqHeaders), Void.class);
+                restTemplate.exchange(URI.create(baseUrl.concat(ADMIN_REST).concat(ADMIN_DELETE_INGREDIENTS)),
+                        HttpMethod.DELETE, new HttpEntity(Collections.singletonList("sugar glaze"),
+                                reqHeaders), Void.class);
         assertEquals(HttpStatus.NOT_FOUND, delIngErrDon.getStatusCode());
         assertTrue(delIngErrDon.getHeaders().get("Exception").toString().contains("Cannot delete " +
                 "ingredients"));
+    }
+
+    @Test
+    public void test8CustomerPlaceOrderTest() {
+        // place-order, correct
+        DonutOrder donutOrder = new DonutOrder();
+        donutOrder.setDonutName("Caramel Delight");
+        donutOrder.setDonutQuantity(2);
+
+        ResponseEntity<Order> orderCorr =
+                testRestTemplate.postForEntity(URI.create(baseUrl
+                                .concat(CUSTOMER_REST).concat(CUSTOMER_PLACE_ORDER)),
+                        Collections.singletonList(donutOrder)
+                        , Order.class);
+        assertEquals(HttpStatus.OK, orderCorr.getStatusCode());
+
+        List<Order> orders = orderRepository.findAll();
+        assertEquals(1, orders.size());
+
+        Order orderCorrRes = orderCorr.getBody();
+        assertNotNull(orderCorrRes);
+        assertEquals("5.0", orderCorrRes.getTotalPrice());
+        assertTrue(orderCorrRes.getDate().isBefore(LocalDateTime.now()));
+        assertEquals(1, orderCorrRes.getDonuts().size());
+
+        // place-order, donut not found
+        donutOrder.setDonutName("wrong");
+
+        ResponseEntity<Order> orderErr =
+                testRestTemplate.postForEntity(URI.create(baseUrl
+                                .concat(CUSTOMER_REST).concat(CUSTOMER_PLACE_ORDER)),
+                        Collections.singletonList(donutOrder)
+                        , Order.class);
+        assertEquals(HttpStatus.BAD_REQUEST, orderErr.getStatusCode());
+    }
+
+    @Test
+    public void test9CustomerWriteReviewTest() {
+        // write-review, correct
+        Order order = orderRepository.save(new Order());
+
+        ResponseEntity<CustomerReview> revCorr =
+                testRestTemplate.postForEntity(URI.create(baseUrl
+                                .concat(CUSTOMER_REST).concat(CUSTOMER_REVIEW).replace("{orderId}",
+                                order.get_id())),
+                        "review", CustomerReview.class);
+        assertEquals(HttpStatus.OK, revCorr.getStatusCode());
+
+        List<CustomerReview> reviews = reviewsRepository.findAll();
+        assertEquals(1, reviews.size());
+
+        CustomerReview reviewCorr = revCorr.getBody();
+        assertNotNull(reviewCorr);
+        assertEquals(order.get_id(), reviewCorr.getOrderId());
+        assertEquals("review", reviewCorr.getReview());
+
+        // write-review, order not found
+        ResponseEntity<CustomerReview> revErr =
+                testRestTemplate.postForEntity(URI.create(baseUrl
+                                .concat(CUSTOMER_REST).concat(CUSTOMER_REVIEW).replace("{orderId}", "wrong")),
+                        "review", CustomerReview.class);
+        assertEquals(HttpStatus.NOT_FOUND, revErr.getStatusCode());
+    }
+
+    @Test
+    public void test10CustomerGetDonutsTest() {
+        // get-donuts, correct
+        ResponseEntity<Donut[]> donutsCorr =
+                testRestTemplate.getForEntity(URI.create(baseUrl.concat(CUSTOMER_REST).concat(CUSTOMER_GET_DONUTS)), Donut[].class);
+        assertEquals(HttpStatus.OK, donutsCorr.getStatusCode());
+
+        assertNotNull(donutsCorr.getBody());
+        List<Donut> donuts = Arrays.asList(donutsCorr.getBody());
+
+        assertEquals(3,donuts.size());
     }
 }

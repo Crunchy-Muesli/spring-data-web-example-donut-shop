@@ -4,33 +4,30 @@ import donut.shop.entity.relational.Donut;
 import donut.shop.entity.relational.Ingredient;
 import donut.shop.rest.service.AdminService;
 import javassist.NotFoundException;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {
         AdminRest.class
 })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AdminRestTest {
 
     @MockBean
@@ -156,9 +153,9 @@ public class AdminRestTest {
     }
 
     @Test
-    public void deleteIngredientsTest(){
+    public void deleteIngredientsTest() {
 
-        ResponseEntity<Void> result = adminRest.deleteIngredients(Arrays.asList("one","two"));
+        ResponseEntity<Void> result = adminRest.deleteIngredients(Arrays.asList("one", "two"));
 
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
@@ -166,7 +163,7 @@ public class AdminRestTest {
 
         doThrow(new RuntimeException()).when(adminService).deleteIngredients(any(List.class));
 
-        ResponseEntity<Void> errorResult = adminRest.deleteIngredients(Arrays.asList("one","two"));
+        ResponseEntity<Void> errorResult = adminRest.deleteIngredients(Arrays.asList("one", "two"));
 
         assertNotNull(errorResult);
         assertEquals(HttpStatus.NOT_FOUND, errorResult.getStatusCode());

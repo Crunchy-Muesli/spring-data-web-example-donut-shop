@@ -44,7 +44,7 @@ public class CustomerRest {
 
     @PostMapping(CUSTOMER_REVIEW)
     public ResponseEntity<CustomerReview> writeReview(@PathVariable("orderId") String orderId,
-                                                      String review) {
+                                                      @RequestBody String review) {
 
         try {
             CustomerReview res = customerService.writeReview(orderId, review);
