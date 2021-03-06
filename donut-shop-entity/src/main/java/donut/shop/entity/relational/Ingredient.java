@@ -12,12 +12,7 @@ import javax.persistence.*;
 public class Ingredient {
 
     @Id
-    // Starting from index 10 as we have already 9 ingredients from the flyway migration
-    @SequenceGenerator(initialValue = 10,
-            allocationSize = 1,
-            name = "ingredient_sequence",
-            sequenceName = "ingredient_sequence")
-    @GeneratedValue(generator = "ingredient_sequence")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ingredientId;
 
     private String name;
